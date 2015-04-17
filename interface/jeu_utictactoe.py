@@ -113,6 +113,8 @@ class Fenetre(Tk):
                                           event.widget.plateau.cordonnees_parent[1],
                                           ligne, colonne))
 
+            self.desactiver_plateau(ligne, colonne)
+
             # On dessine le pion dans le canvas, au centre de la case.
             # On utilise l'attribut "tags" pour être en mesure de récupérer
             # les éléments dans le canvas afin de les effacer par exemple.
@@ -140,6 +142,24 @@ class Fenetre(Tk):
 
         except ErreurChoixCase as e:
             messagebox.showerror ("Erreur", str(e))
+
+    def desactiver_plateau(self, ligne, colonne):
+#Eric        print ('ligne:',ligne, type(ligne), ' colonne:',colonne, type(colonne))
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if i != ligne or j != colonne:
+                    self.canvas_uplateau[i,j]['borderwidth'] = 2
+                    self.canvas_uplateau[i,j]['background'] = '#e1e1e1'
+                    self.canvas_uplateau[i,j].unbind('<Button-1>')
+
+                else:
+#Eric                    print ('else, bind le plateau', i, type(i), j, type (j))
+                    self.canvas_uplateau[i,j]['borderwidth'] = 2
+                    self.canvas_uplateau[i,j]['background'] = 'blue'
+                    self.canvas_uplateau[ligne, colonne].bind('<Button-1>', self.selectionner)
+
+    def activer_plateau(self):
+        self.canvas_uplateau[0,0].bind('<Button-1>'.self.selectionner)
 
     def afficher_message(self, message):
         """
