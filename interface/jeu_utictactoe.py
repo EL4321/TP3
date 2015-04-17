@@ -4,10 +4,12 @@ __date__ = "Ajoutez la date de remise"
 """Ce fichier permet de...(complétez la description de ce que
 ce fichier est supposé faire ! """
 
-from tkinter import Tk, Canvas, Label, Frame, GROOVE
+from tkinter import Tk, Canvas, Label, Frame, GROOVE, messagebox
 from tictactoe.partie import Partie
 from tictactoe.joueur import Joueur
 
+class ErreurChoixCase(Exception):
+    pass
 
 class CanvasPlateau(Canvas):
     """
@@ -66,8 +68,10 @@ class Fenetre(Tk):
         # Création des frames et des canvas du jeu
         for i in range(0, 3):
             for j in range(0, 3):
-                cadre = Frame(self, borderwidth=5, relief=GROOVE)
+                cadre = Frame(self, borderwidth=5, relief=GROOVE, background = '#e1e1e1')
                 cadre.grid(row=i, column=j, padx=5, pady=5)
+                cadre.bind('<Enter>', self.entrer_frame)
+                cadre.bind('<Leave>', self.sortir_frame)
                 self.canvas_uplateau[i,j] = CanvasPlateau(cadre, self.partie.uplateau[i,j])
                 self.canvas_uplateau[i,j].grid()
                 # On lie un clic sur le Canvas à une méthode.
@@ -89,40 +93,49 @@ class Fenetre(Tk):
         """
             À completer !.
         """
-        # On trouve le numéro de ligne/colonne en divisant par le nombre de pixels par case.
-        # event.widget représente ici un des 9 canvas !
-        ligne = event.y // event.widget.taille_case
-        colonne = event.x // event.widget.taille_case
 
-        self.afficher_message("Case sélectionnée à la position (({},{}),({},{}))."
-                              .format(event.widget.plateau.cordonnees_parent[0],
-                                      event.widget.plateau.cordonnees_parent[1],
-                                      ligne, colonne))
+        try:
 
-        # On dessine le pion dans le canvas, au centre de la case.
-        # On utilise l'attribut "tags" pour être en mesure de récupérer
-        # les éléments dans le canvas afin de les effacer par exemple.
-        coordonnee_y = ligne * event.widget.taille_case + event.widget.taille_case // 2
-        coordonnee_x = colonne * event.widget.taille_case + event.widget.taille_case // 2
-        event.widget.create_text(coordonnee_x, coordonnee_y, text=self.partie.joueur_courant.pion,
-                                 font=('Helvetica', event.widget.taille_case//2), tags='pion')
+            # On trouve le numéro de ligne/colonne en divisant par le nombre de pixels par case.
+            # event.widget représente ici un des 9 canvas !
+            ligne = event.y // event.widget.taille_case
+            colonne = event.x // event.widget.taille_case
 
-        # Mettre à jour la case sélectionnée
-        self.partie.uplateau[event.widget.plateau.cordonnees_parent]\
-            .selectionner_case(ligne, colonne, self.partie.joueur_courant.pion)
+            if not self.partie.uplateau[event.widget.plateau.cordonnees_parent].cases[ligne, colonne].est_vide():
+                raise ErreurChoixCase ("La case est déjà sélectionné !")
 
-        # Changer le joueur courant.
-        # Vous pouvez modifier ou déplacer ce code dans une autre méthode selon votre propre solution.
-        if self.partie.joueur_courant == self.partie.joueurs[0]:
-            self.partie.joueur_courant = self.partie.joueurs[1]
-        else:
-            self.partie.joueur_courant = self.partie.joueurs[0]
+            self.afficher_message("Case sélectionnée à la position (({},{}),({},{}))."
+                                  .format(event.widget.plateau.cordonnees_parent[0],
+                                          event.widget.plateau.cordonnees_parent[1],
+                                          ligne, colonne))
 
-        # Effacer le contenu du widget (canvas) et du plateau (dictionnaire) quand ce dernier devient plein.
-        # Vous pouvez modifier ou déplacer ce code dans une autre méthode selon votre propre solution.
-        if not event.widget.plateau.non_plein():
-            event.widget.delete('pion')
-            event.widget.plateau.initialiser()
+            # On dessine le pion dans le canvas, au centre de la case.
+            # On utilise l'attribut "tags" pour être en mesure de récupérer
+            # les éléments dans le canvas afin de les effacer par exemple.
+            coordonnee_y = ligne * event.widget.taille_case + event.widget.taille_case // 2
+            coordonnee_x = colonne * event.widget.taille_case + event.widget.taille_case // 2
+            event.widget.create_text(coordonnee_x, coordonnee_y, text=self.partie.joueur_courant.pion,
+                                     font=('Helvetica', event.widget.taille_case//2), tags='pion')
+
+            # Mettre à jour la case sélectionnée
+            self.partie.uplateau[event.widget.plateau.cordonnees_parent]\
+                .selectionner_case(ligne, colonne, self.partie.joueur_courant.pion)
+
+            # Changer le joueur courant.
+            # Vous pouvez modifier ou déplacer ce code dans une autre méthode selon votre propre solution.
+            if self.partie.joueur_courant == self.partie.joueurs[0]:
+                self.partie.joueur_courant = self.partie.joueurs[1]
+            else:
+                self.partie.joueur_courant = self.partie.joueurs[0]
+
+            # Effacer le contenu du widget (canvas) et du plateau (dictionnaire) quand ce dernier devient plein.
+            # Vous pouvez modifier ou déplacer ce code dans une autre méthode selon votre propre solution.
+            if not event.widget.plateau.non_plein():
+                event.widget.delete('pion')
+                event.widget.plateau.initialiser()
+
+        except ErreurChoixCase as e:
+            messagebox.showerror ("Erreur", str(e))
 
     def afficher_message(self, message):
         """
@@ -131,3 +144,8 @@ class Fenetre(Tk):
         self.messages['foreground'] = 'black'
         self.messages['text'] = message
 
+    def entrer_frame(self, event):
+        event.widget['background'] = 'red'
+
+    def sortir_frame(self, event):
+        event.widget['background'] = '#e1e1e1'
