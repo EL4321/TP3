@@ -4,7 +4,7 @@ __date__ = "Ajoutez la date de remise"
 """Ce fichier permet de...(complétez la description de ce que
 ce fichier est supposé faire ! """
 
-from tkinter import Tk, Canvas, Label, Frame, GROOVE, messagebox
+from tkinter import Tk, Canvas, Label, Frame, GROOVE, messagebox, Button, E
 from tictactoe.partie import Partie
 from tictactoe.joueur import Joueur
 
@@ -28,6 +28,7 @@ class CanvasPlateau(Canvas):
                          height=self.plateau.n_colonnes * self.taille_case)
 
         # Dessiner le plateau du jeu ultimate Tic-Tac-Toe.
+
         self.dessiner_plateau()
 
 
@@ -65,11 +66,14 @@ class Fenetre(Tk):
         # Un ditionnaire contenant les 9 canvas des 9 plateaux du jeu
         self.canvas_uplateau = {}
 
+        Button(self.canvas_uplateau, text = 'Quitter', command = self.quit).\
+            grid (row = 5, column = 4, sticky = E)
+
         # Création des frames et des canvas du jeu
         for i in range(0, 3):
             for j in range(0, 3):
                 cadre = Frame(self, borderwidth=5, relief=GROOVE, background = '#e1e1e1')
-                cadre.grid(row=i, column=j, padx=5, pady=5)
+                cadre.grid(row=i+3, column=j, padx=5, pady=5)
                 cadre.bind('<Enter>', self.entrer_frame)
                 cadre.bind('<Leave>', self.sortir_frame)
                 self.canvas_uplateau[i,j] = CanvasPlateau(cadre, self.partie.uplateau[i,j])
